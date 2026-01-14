@@ -1,0 +1,264 @@
+@model dynamic
+@{
+    Layout = null;
+    var statusClass = Model.Status == "Pending" ? "warning" :
+                    Model.Status == "In Progress" ? "info" :
+                    Model.Status == "Resolved" ? "success" : 
+                    Model.Status == "Rejected" ? "danger" : "secondary";
+    var priorityClass = Model.Priority == "High" ? "danger" :
+                      Model.Priority == "Medium" ? "warning" : "info";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Complaint Details - Print View</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --ink: #111827;
+            --muted: #6b7280;
+            --border: #d1d5db;
+            --surface: #ffffff;
+            --surface-soft: #f8fafc;
+        }
+
+        html, body {
+            background: var(--surface);
+            color: var(--ink);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.35;
+            padding: 24px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .print-container {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: none;
+            margin-bottom: 18px;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .card-header {
+            background-color: var(--surface-soft);
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            padding: 0.8rem 1rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .print-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border: 1px solid var(--border);
+            color: var(--ink);
+            background: transparent;
+            border-radius: 999px;
+            padding: 0.35rem 0.7rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+
+        .print-badge--secondary {
+            background: #f3f4f6;
+        }
+        .print-badge--danger {
+            border-color: #fecaca;
+            background: #fef2f2;
+        }
+        .print-badge--warning {
+            border-color: #fde68a;
+            background: #fffbeb;
+        }
+        .print-badge--info {
+            border-color: #bae6fd;
+            background: #f0f9ff;
+        }
+        .print-badge--success {
+            border-color: #bbf7d0;
+            background: #f0fdf4;
+        }
+
+        .print-meta {
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .timeline-item {
+            padding-bottom: 1.25rem;
+            border-left: 2px solid var(--border);
+            padding-left: 1.25rem;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -0.5rem;
+            top: 0.1rem;
+            width: 0.85rem;
+            height: 0.85rem;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid #6b7280;
+        }
+
+        @@media print {
+            @@page {
+                margin: 12mm;
+            }
+
+            body {
+                padding: 0;
+            }
+
+            .print-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+
+    <div class="print-container">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+            <div>
+                <h1 class="h3 fw-bold mb-0">Complaint Management System</h1>
+                <p class="text-muted mb-0">Complaint Details Report</p>
+            </div>
+            <div class="text-end">
+                <p class="mb-0 print-meta">Printed on: @DateTime.Now.ToString("dd MMM yyyy HH:mm")</p>
+                <p class="mb-0 print-meta">Complaint ID: #@Model.ComplaintId</p>
+            </div>
+        </div>
+
+        <!-- Main Info -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <span class="print-badge print-badge--secondary me-2">@Model.CategoryName</span>
+                        <span class="print-badge print-badge--@statusClass">@Model.Status</span>
+                        <h2 class="h4 mt-2 fw-bold">@Model.Title</h2>
+                    </div>
+                    <div>
+                        <span class="print-badge print-badge--@priorityClass">Priority: @Model.Priority</span>
+                    </div>
+                </div>
+
+                <div class="row g-3 text-muted">
+                    <div class="col-6">
+                        <strong>Location:</strong> @Model.Location
+                    </div>
+                    <div class="col-6">
+                        <strong>Submitted By:</strong> 
+                        @if (Model.CitizenName == "Protected")
+                        {
+                            <span class="text-secondary"><i class="bi bi-shield-lock me-1"></i> Protected </span>
+                        }
+                        else
+                        {
+                            @Model.CitizenName
+                        }
+                    </div>
+                    <div class="col-6">
+                        <strong>Submitted At:</strong> @((Model.SubmittedAt is DateTime sdt) ? sdt.ToString("dd MMM yyyy HH:mm") : "-")
+                    </div>
+                    @if (Model.StaffName != "Unassigned")
+                    {
+                        <div class="col-6">
+                            <strong>Assigned to:</strong> @Model.StaffName
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="card mb-4">
+            <div class="card-header">Description</div>
+            <div class="card-body">
+                <p class="mb-0" style="white-space: pre-wrap;">@Model.Description</p>
+            </div>
+        </div>
+
+        <!-- Attachments List (No Images for Print to save ink/space, just list) -->
+        @if (Model.Attachments != null && System.Linq.Enumerable.Any((IEnumerable<dynamic>)Model.Attachments))
+        {
+            <div class="card mb-4">
+                <div class="card-header">Attachments</div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var attachment in Model.Attachments)
+                        {
+                            if (attachment == null) continue;
+                            <li class="mb-1">
+                                <i class="bi bi-paperclip me-2"></i>
+                                @System.IO.Path.GetFileName(attachment.FilePath) 
+                                <span class="text-muted small">(@attachment.FileType)</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+
+        <!-- History -->
+        @if (Model.History != null && System.Linq.Enumerable.Any((IEnumerable<dynamic>)Model.History))
+        {
+            <div class="card mb-4">
+                <div class="card-header">Status History</div>
+                <div class="card-body">
+                    <div class="timeline mt-2">
+                        @foreach (var history in Model.History)
+                        {
+                            if (history == null) continue;
+                            <div class="timeline-item">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <strong>@history.StatusBefore &rarr; @history.StatusAfter</strong>
+                                    <small class="text-muted">@((history.ChangeTime is DateTime hdt) ? hdt.ToString("dd MMM yyyy HH:mm") : "")</small>
+                                </div>
+                                @if (!string.IsNullOrEmpty(history.Notes))
+                                {
+                                    <p class="mb-0 small text-muted">@history.Notes</p>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Footer -->
+        <div class="text-center text-muted small mt-5 border-top pt-3">
+            <p>Generated by Complaint Management System</p>
+        </div>
+    </div>
+
+    <script>
+        // Optional: Close window after print (uncomment if desired behavior)
+        // window.onafterprint = function() { window.close(); };
+    </script>
+</body>
+</html>

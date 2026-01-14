@@ -1,0 +1,12 @@
+bin/
+obj/
+.vs/
+app.db
+DB.mdf
+DB_log.ldf
+cloudflared.exe
+*.user
+*.suo
+*.vsidx
+slnx.sqlite
+Properties/PublishProfiles/*.user
