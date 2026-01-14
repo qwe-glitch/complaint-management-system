@@ -31,24 +31,30 @@ builder.Services.AddScoped<ComplaintManagementSystem.Services.ChatService>();
 builder.Services.AddSingleton<ComplaintManagementSystem.Services.ISpamDetectionService, ComplaintManagementSystem.Services.SpamDetectionService>();
 builder.Services.AddSingleton<ComplaintManagementSystem.Services.ChatStorageService>();
 builder.Services.AddHostedService<ComplaintManagementSystem.Services.ComplaintReminderService>();
-
-builder.Services.AddAuthentication(options =>
+ 
+var authBuilder = builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
-.AddCookie(options => 
+.AddCookie(options =>
 {
     options.LoginPath = "/Account/Login";
     options.LogoutPath = "/Account/Logout";
-})
-.AddGoogle(options =>
-{
-    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "missing-client-id";
-    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "missing-client-secret";
-    options.CallbackPath = "/signin-google";
-    options.CorrelationCookie.SameSite = SameSiteMode.None;
-    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
 });
+
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    authBuilder.AddGoogle(options =>
+    {
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
+        options.CallbackPath = "/signin-google";
+        options.CorrelationCookie.SameSite = SameSiteMode.None;
+        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+    });
+}
 
 builder.Services.AddAuthorization();
 builder.Services.AddSignalR();
