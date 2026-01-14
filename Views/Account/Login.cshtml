@@ -25,11 +25,14 @@
                 <div class="text-center mb-3">
                     <small class="text-muted">Sign in with</small>
                 </div>
-                <div class="d-grid gap-2">
-                    <a href="/Account/ExternalLogin?provider=Google" class="btn btn-outline-danger">
-                        <i class="bi bi-google me-2"></i> Continue with Google
-                    </a>
-                </div>
+                @if (ViewBag.GoogleEnabled == true)
+                {
+                    <div class="d-grid gap-2">
+                        <a href="/Account/ExternalLogin?provider=Google" class="btn btn-outline-danger">
+                            <i class="bi bi-google me-2"></i> Continue with Google
+                        </a>
+                    </div>
+                }
                 <div class="text-center my-3">
                     <small class="text-muted">Or sign in with email</small>
                 </div>

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace ComplaintManagementSystem.Controllers;
 
@@ -18,11 +19,13 @@ public class AccountController : Controller
 {
     private readonly DB _context;
     private readonly ComplaintManagementSystem.Services.IEmailService _emailService;
+    private readonly IConfiguration _configuration;
 
-    public AccountController(DB context, ComplaintManagementSystem.Services.IEmailService emailService)
+    public AccountController(DB context, ComplaintManagementSystem.Services.IEmailService emailService, IConfiguration configuration)
     {
         _context = context;
         _emailService = emailService;
+        _configuration = configuration;
     }
 
     // GET: /Account/Login
@@ -35,6 +38,9 @@ public class AccountController : Controller
             model.Email = email;
             model.RememberMe = true;
         }
+        var googleEnabled = !string.IsNullOrWhiteSpace(_configuration["Authentication:Google:ClientId"]) &&
+                            !string.IsNullOrWhiteSpace(_configuration["Authentication:Google:ClientSecret"]);
+        ViewBag.GoogleEnabled = googleEnabled;
         return View(model);
     }
 
@@ -289,6 +295,13 @@ public class AccountController : Controller
     [HttpGet]
     public IActionResult ExternalLogin(string provider)
     {
+        var googleEnabled = !string.IsNullOrWhiteSpace(_configuration["Authentication:Google:ClientId"]) &&
+                            !string.IsNullOrWhiteSpace(_configuration["Authentication:Google:ClientSecret"]);
+        if (provider == "Google" && !googleEnabled)
+        {
+            TempData["ErrorMessage"] = "Google login is not available.";
+            return RedirectToAction(nameof(Login));
+        }
         var redirectUrl = Url.Action(nameof(ExternalLoginCallback));
         var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
         return Challenge(properties, provider);
