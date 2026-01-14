@@ -32,7 +32,7 @@ builder.Services.AddSingleton<ComplaintManagementSystem.Services.ISpamDetectionS
 builder.Services.AddSingleton<ComplaintManagementSystem.Services.ChatStorageService>();
 builder.Services.AddHostedService<ComplaintManagementSystem.Services.ComplaintReminderService>();
  
-var authBuilder = builder.Services.AddAuthentication(options =>
+builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
@@ -41,20 +41,6 @@ var authBuilder = builder.Services.AddAuthentication(options =>
     options.LoginPath = "/Account/Login";
     options.LogoutPath = "/Account/Logout";
 });
-
-var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
-var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
-{
-    authBuilder.AddGoogle(options =>
-    {
-        options.ClientId = googleClientId;
-        options.ClientSecret = googleClientSecret;
-        options.CallbackPath = "/signin-google";
-        options.CorrelationCookie.SameSite = SameSiteMode.None;
-        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-    });
-}
 
 builder.Services.AddAuthorization();
 builder.Services.AddSignalR();
